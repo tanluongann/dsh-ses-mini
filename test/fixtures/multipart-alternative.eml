@@ -1,0 +1,25 @@
+Return-Path: <mathieu@example.com>
+Delivered-To: nelly@tiaolabs.com
+From: Mathieu D <mathieu@example.com>
+To: nelly@tiaolabs.com
+Subject: =?UTF-8?B?RMOpZ3VzdGF0aW9uIGNhdmU=?=
+Date: Tue, 14 Oct 2026 10:40:00 +0200
+Message-ID: <multi-0002@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="=-alt-0002"
+
+--=-alt-0002
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+La dégustation était très belle. J'ai noté le millésime 2019
+comme le meilleur des trois.
+
+--=-alt-0002
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html><body><p>La <b>dégustation</b> était très belle.</p>
+<p>HTML should never reach the model.</p></body></html>
+
+--=-alt-0002--

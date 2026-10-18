@@ -1,0 +1,40 @@
+{
+  "name": "dsh-ses-mini",
+  "version": "0.1.0",
+  "private": true,
+  "description": "House email (AWS SES) surface for DSH: inbound mail from an S3 drop, outbound raw-MIME replies threaded with In-Reply-To/References.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/",
+    "scripts/",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "test": "node test/harness.mjs",
+    "test:integration": "node test/integration.mjs",
+    "link-closure": "node scripts/link-closure.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1151.0",
+    "@aws-sdk/client-ses": "^3.1151.0",
+    "mailparser": "^3.9.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

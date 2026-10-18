@@ -1,0 +1,10 @@
+node_modules/
+*.log
+
+# per-instance runtime state (bindings + dedup) — never commit a correspondent's address
+ses-mini-*.json
+
+# a raw answer SES refused, kept for an operator to resend (see README)
+logs/
+
+.DS_Store

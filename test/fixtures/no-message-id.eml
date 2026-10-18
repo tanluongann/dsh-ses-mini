@@ -1,0 +1,13 @@
+Return-Path: <mathieu@example.com>
+Delivered-To: nelly@tiaolabs.com
+From: Mathieu D <mathieu@example.com>
+To: nelly@tiaolabs.com
+Subject: Re: dossier
+ imported
+Date: Tue, 14 Oct 2026 16:30:00 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Cette fois le sujet est plié sur deux lignes, et il n'y a pas de
+Message-ID — l'objet S3 est alors la seule identité possible.

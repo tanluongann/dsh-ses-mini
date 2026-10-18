@@ -1,0 +1,34 @@
+# SES mail surface — bundle patch.
+#
+# Mounted by adding "dsh-ses-mini" to a profile's dsh.profile.bundles.
+# The row id is `ses-mini`; a profile patch targets that id to fill in the mailbox,
+# the address and the operators.
+#
+# Credentials are NOT here and never will be: the S3/SES clients are built with no
+# explicit credentials, so the SDK resolves them from the environment, the shared
+# config file or the instance role. A secret in this file would be a secret in the
+# profile patch, in the repo and in the shell history.
+#
+# Nothing here is required: with no mailBucket (or no fromAddress) the row activates
+# and reports "dormant" in one log line instead of failing the tree.
+- insert:
+    - id: ses-mini
+      name: 'dsh-ses-mini'
+      config:
+        # Leave empty to use the region the SDK resolves (AWS_REGION / shared config).
+        awsRegion: ''
+        # The bucket the SES receipt rule delivers raw MIME into, and its prefix.
+        mailBucket: ''
+        mailPrefix: 'inbound/'
+        # The address answers come from — it must be a verified SES identity.
+        fromAddress: ''
+        fromName: ''
+        # Sender allowlist (addr-spec). Empty = anyone who can reach the mailbox,
+        # which is logged loudly on every accepted message.
+        operators: []
+        pollMs: 30000
+        steerMidTurn: true
+        # Per-agent state lives in the profile dir (profileContext.dir), so several
+        # mailboxes on one host never share a binding.
+        signature: ''
+        includeQuotedOriginal: false
