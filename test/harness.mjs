@@ -3,7 +3,7 @@
  * `node test/harness.mjs` — no network, no AWS, no DSH session.
  */
 import assert from 'node:assert/strict'
-import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, readdirSync, rmSync , writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { simpleParser } from 'mailparser'
@@ -14,6 +14,7 @@ import { answerBody, authSummary, senderAuthenticated, automationReason, buildRe
 import { createMailbox, readBody, retryableSendError } from '../lib/ses.js'
 import { foldEvent, initialTurn, textOf } from '../lib/turn.js'
 import { MailBot } from '../lib/bot.js'
+import { OutboundPipe } from '../lib/outbound.js'
 
 let checks = 0
 const ok = (label) => { checks += 1; console.log(`  ✓ ${label}`) }
@@ -753,6 +754,44 @@ async function botHarness(overrides = {}, { agent = fakeAgent(), warn } = {}) {
   assert.match(aligned.log(), /DISPATCH from=mathieu@example\.com session=/, 'the no-DMARC owner still gets through in aligned mode')
   aligned.close()
   ok('sender auth: SES verdict is read first-match, logged always, and enforceable')
+}
+
+// --------------------------------------------------------------- outbound --
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ses-outbound-'))
+  const quiet = { info() {}, warn() {} }
+  const sent = []
+  const sender = { sendMarkdown: async (to, md) => { sent.push([to, md]); return true } }
+  const drop = (pipe, obj) => {
+    const name = `${Date.now()}-${Math.random().toString(16).slice(2, 6)}.json`
+    writeFileSync(join(pipe.dir, name), JSON.stringify(obj))
+    return name
+  }
+  const config = Config({ outboundPrimaryChat: 'owner@example.com', politenessNoteRatePerHour: 1, politenessDedupWindowMinutes: 30, politenessChatter: 'never' })
+  let clock = Date.UTC(2026, 9, 18, 12)
+  const pipe = new OutboundPipe({ ctx: {}, config, sender, logger: quiet, cwd: dir, now: () => clock })
+  pipe.setup()
+
+  drop(pipe, { to: 'primary', class: 'alert', text: 'A1' })
+  await pipe.tick()
+  assert.deepEqual(sent.at(-1), ['owner@example.com', 'A1'], 'alert emits to the primary address immediately')
+
+  drop(pipe, { to: 'primary', class: 'note', text: 'N1' })
+  await pipe.tick()
+  const n3 = drop(pipe, { to: 'primary', class: 'note', text: 'N2' })
+  await pipe.tick()
+  assert.ok(!sent.some(([, m]) => m === 'N2'), 'note over budget is held')
+  assert.ok(pipe.jsonFiles('held').includes(n3), 'held file present')
+
+  drop(pipe, { to: 'primary', class: 'chatter', text: 'C' })
+  await pipe.tick()
+  assert.equal(sent.filter(([, m]) => m === 'C').length, 0, 'email chatter is never sent by default (contract mapping)')
+
+  clock += 3600_000
+  await pipe.tick()
+  assert.ok(sent.some(([, m]) => m === 'N2'), 'held note released when the budget window resets')
+  rmSync(dir, { recursive: true, force: true })
+  ok('outbound: alert-immediate/note-budget-hold-release/chatter-never (email mapping)')
 }
 
 console.log(`\nALL CHECKS PASSED (${checks} groups)`)

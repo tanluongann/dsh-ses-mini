@@ -76,6 +76,21 @@ quote) and an inline reply are recognised and passed through whole, because trim
 would lose the human's own words. The log line records `chars=` (what the model saw) and
 `raw-chars=` (what arrived).
 
+## Event table (CHANNEL-CONTRACT §3/§6)
+
+| Event | Lane | Notes |
+|---|---|---|
+| `user.message` (accepted mail) | **turn** | one turn per mail; automated/list/bounce refused before it |
+| `steer` (mail arriving mid-turn) | **steer** | `steerMidTurn` |
+| bounce / receipt | **state** | logged, never wakes the model |
+| `agent.alert` / `agent.note` | **outbound** | emit via `<cwd>/channel-outbound/` spool (`channel-emit.py`); alert immediate, note rate-limited |
+| `agent.chatter` | **held** | email mapping: never sent (chatter-never), held visibly |
+
+New config keys (contract §2/§4): `outboundPrimaryChat` (owner address for
+`to: "primary"`), `politenessQuietHours`, `politenessNoteRatePerHour`,
+`politenessDedupWindowMinutes`, `politenessChatter` (default `never` for this
+transport), `reasoningEffort` (provider-gated, contract §2).
+
 ## Outbound
 
 On `turn/end` the answer — the text of the last non-empty `assistant/message` — becomes a raw
